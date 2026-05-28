@@ -20,22 +20,14 @@ The installation workflow included:
 5. Exporting the executable directory into the system `PATH`
 6. Testing the installation with `lsdtt-basic-metrics -h`
 
-## 1. LSDTopoTools
+## 1. Install LSDTopoTools
 https://lsdtopotools.github.io/
 
-### 1.1 Installation
-
-```conda create -n lsdtopo python=3.11 -c conda-forge conda activate lsdtopo```
-
-```gcc gxx cmake make```
-
-```gdal rasterio boost eigen fftw```
-
-### 1.2 Clone LSDTopoTools
+Clone: 
 
 ```cd ~/scratch/Podostemaceae/niche/fabdem git clone https://github.com/LSDtopotools/LSDTopoTools2.git```
 
-### 1.3 Compile LSDTopoTools
+### 1.2 Compile LSDTopoTools
 
 ```cd LSDTopoTools2```
 
@@ -47,20 +39,20 @@ https://lsdtopotools.github.io/
 
 ```make -j 8```
 
-### 1.4 Add LSDTopoTools to PATH
+### 1.3 Add LSDTopoTools to PATH
 The LSDTopoTools executable directory was added to the system `PATH` to allow commandssuch as `lsdtt-basic-metrics` to be executed from any directory without specifying the full executable path.
 
 ```export PATH=~/scratch/Podostemaceae/niche/fabdem/LSDTopoTools2/src/build:$PATH```
 
-### 1.5 Check GDAL installation
+### 1.4 Check GDAL installation
 
 ```gdalinfo --version```
 
-### 1.6 Check available LSDTopoTools commands
+### 1.5 Check available LSDTopoTools commands
 
 ```ls ~/scratch/Podostemaceae/niche/fabdem/LSDTopoTools2/src/build```
 
-### 1.7 Confirm `lsdtt-basic-metrics` works
+### 1.6 Confirm `lsdtt-basic-metrics` works
 
 ```lsdtt-basic-metrics -h```
 
@@ -144,13 +136,13 @@ Script: *lsd_neotropics_topo.sh*
 Script: *lsd_neotropics_hydro.sh*
 
 
-## 5. Generation of continental topographic and hydrological mosaics
+## 6. Generation of continental topographic and hydrological mosaics
 
 All raster variables generated independently for each 5° × 5° tile were reprojected to a common geographic coordinate system (WGS84; EPSG:4326) and merged into continental mosaics using GDAL (gdalwarp). Final rasters were generated at ~30 m spatial resolution (1 arc-second) and exported as compressed Cloud Optimized GeoTIFFs (COGs). The resulting mosaics included topographic variables (slope, aspect, hillshade, and curvature metrics) and hydrological flow accumulation variables (d8_area, dinf_area, MD_area, FMD_area, and QMD_area).
 
 Script: *mosaic_lsdtopo.sh*
 
-# 6. Soil variables
+# 7. Soil variables
 
 Soil variables were obtained from the ISRIC SoilGrids global database at 0–5 cm depth (https://soilgrids.org/). Selected variables included bulk density (bdod), cation exchange capacity (cec), coarse fragments (cfvo), clay content (clay), nitrogen, pH in water (phh2o), silt content (silt), and soil organic carbon (soc). These variables were selected after exploratory analyses, including Pearson correlation and PCA, to retain ecologically informative and minimally redundant predictors. #Iextract my ocurrences (Notebook: 03_soil.ipy).
 
@@ -159,4 +151,4 @@ To enable scalable downloads across the Neotropics, the study area was subdivide
 Raster downloads were then performed in a high-performance computing (HPC) environment using SLURM array jobs through the script `soilgrids_download.sh`. Each array task downloaded a single SoilGrids variable for a single geographic tile using the SoilGrids Web Coverage Service (WCS), allowing efficient and reproducible large-scale retrieval of environmental rasters across the Neotropics.
 
 
-## 7. CONTINUE WITH Notebook: 03_soil.ipy
+## 8. CONTINUE WITH Notebook: 03_soil.ipy
