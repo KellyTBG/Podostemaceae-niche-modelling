@@ -58,7 +58,7 @@ The LSDTopoTools executable directory was added to the system `PATH` to allow co
 
 This confirmed that LSDTopoTools was compiled correctly and that the executable can becalled from the terminal.
 
-## 2. ### Install lsdtopytools
+## 2. Install lsdtopytools
 
 A Python interface for LSDTopoTools (`lsdtopytools`) was also installed to facilitate terrain analysis workflows directly from Python environments.
 
@@ -76,13 +76,13 @@ Test installation:
 
 `lsdtopytools` provides Python wrappers and utilities for interacting with LSDTopoTools workflows, enabling DEM preprocessing, terrain metric extraction, and integration with Python-based ecological and spatial analyses.
 
-## 3. FABDEM Download (Neotropical FABDEM tiles)
+## 3. FABDEM Download
 https://research-information.bris.ac.uk/en/datasets/fabdem-v1-2/
 
 FABDEM (Forest And Buildings removed Copernicus DEM) is a global Digital Elevation Model (DEM) derived from the Copernicus GLO-30 dataset, in which the height bias produced by forests and buildings has been removed. The dataset provides a more accurate representation of bare-earth topography and is particularly useful for hydrological, geomorphological, ecological, and niche modelling analyses.
 For this project, FABDEM V1-2 tiles covering the Neotropical region were downloaded and prepared for large-scale terrain analysis using LSDTopoTools.
 
-- Extent used (Neotropics area): xmin, ymin, xmax, ymax = -120, -35, -30, 35 
+- Extent used (Neotropics area): ```xmin, ymin, xmax, ymax = -120, -35, -30, 35``` 
 
 - Downloaded all FABDEM V1-2 tiles intersecting the Neotropical region.
 
@@ -113,7 +113,7 @@ script used: *fabdem.sh*
 ```gdalinfo Neotropics_FABDEM.vrt | grep -A6 "Corner Coordinates"```#help to verify integrity
 
 ## 5. Generation of Neotropical analysis tiles
-# LSDTopoTools tile processing
+## LSDTopoTools tile processing
 
 Topographic and hydrological variables were calculated using LSDTopoTools. To enable scalable continental analyses, the Neotropical region was subdivided into regular 5° × 5° tiles stored in a tab-delimited table *tiles_neotropics.tsv* generated with the script *tiles_coordinates.sh*.
 
@@ -142,7 +142,7 @@ All raster variables generated independently for each 5° × 5° tile were repro
 
 Script: *mosaic_lsdtopo.sh*
 
-# 7. Soil variables
+## 7. Soil variables
 
 Soil variables were obtained from the ISRIC SoilGrids global database at 0–5 cm depth (https://soilgrids.org/). Selected variables included bulk density (bdod), cation exchange capacity (cec), coarse fragments (cfvo), clay content (clay), nitrogen, pH in water (phh2o), silt content (silt), and soil organic carbon (soc). These variables were selected after exploratory analyses, including Pearson correlation and PCA, to retain ecologically informative and minimally redundant predictors. #Iextract my ocurrences (Notebook: 03_soil.ipy).
 
