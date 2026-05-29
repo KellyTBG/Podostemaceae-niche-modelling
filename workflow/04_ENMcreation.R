@@ -91,7 +91,7 @@ env_stack_selected <- env_stack[[selected_vars]]
 print(env_stack_selected)
 
 #Run ENMeval with block cross-validation and a range of regularization multipliers
-terraOptions(memfrac = 0.9)  # allow terra to use 90% of available RAM
+terraOptions(memfrac = 0.9)  #Allow terra to use more available RAM
 enmeval_results <- ENMevaluate(
   occs = occs,
   envs = env_stack_selected,
@@ -115,32 +115,7 @@ best_aic
 best_auc
 best_or
 
-#Run ENMeval with block cross-validation and a range of regularization multipliers
-terraOptions(memfrac = 0.9)  # allow terra to use 90% of available RAM
-enmeval_results <- ENMevaluate(
-  occs = occs,
-  envs = env_stack_selected,
-  algorithm = "maxnet",        
-  partitions = "block",        #Block cross-validation
-  tune.args = list(
-    fc = c("L", "LQ", "LQH", "LQHP"),  #Testing feature classes: linear, quadratic, hinge
-    rm = c(1, 2, 4)      #Testing regularization multipliers
-  )
-)
-
-# Check results
-eval.results(enmeval_results)
-
-eval_tbl <- eval.results(enmeval_results)
-best_aic <- eval_tbl[which.min(eval_tbl$AICc), ]
-best_auc <- eval_tbl[which.max(eval_tbl$auc.val.avg), ]
-best_or  <- eval_tbl[which.min(eval_tbl$or.10p.avg), ]
-
-best_aic
-best_auc
-best_or
-
-#Prepare data for running and plotting single best model (FC=L, RM=2 in Maxnet)
+#Prepare data for running and plotting single best model (Testing: FC = L, RM = 2 and FC = LQ, RM = 4)
 #Occurrence coords
 occs <- soil_df[, c("Longitude", "Latitude")]
 
@@ -176,13 +151,13 @@ p <- c(
 
 dat <- rbind(occs_env, bg_env)
 
-#Maxnet model (FC = L, RM = 2)
+#Maxnet model (Testing: FC = L, RM = 2 and FC = LQ, RM = 4)
 library(maxnet)
 maxnet_model <- maxnet(
   p = p,
   data = dat,
-  f = maxnet.formula(p, dat, classes = "l"),
-  regmult = 2
+  f = maxnet.formula(p, dat, classes = "lq"),
+  regmult = 4
 )
 
 #Predict across raster
@@ -194,7 +169,8 @@ prediction <- predict(
 )
 
 #Plot continuous map
-plot(prediction, main= "Continuous Podostemaceae ENM (FC= L, RM= 2, AUC= 0.862, OR10P= 0.162")
+par(mfrow = c(1,1)) 
+plot(prediction, main= "Continuous Podostemaceae ENM (FC= LQ, RM= 4, AUC= 0.866, OR10P= 0.162)")
 points(occs, pch = 20, cex = 0.1, col = "red")
 
 
@@ -202,7 +178,7 @@ points(occs, pch = 20, cex = 0.1, col = "red")
 binary_map <- prediction >= thresh_10p
 plot(binary_map,
      col = c("white", "darkgreen"),
-     legend = FALSE, main= "Binary Podostemaceae ENM (FC= L, RM= 2, AUC= 0.862, OR10P= 0.162")
+     legend = FALSE, main= "Binary Podostemaceae ENM (FC= LQ, RM= 4, AUC= 0.866, OR10P= 0.162)")
 
 points(occs, pch = 20, cex = 0.1, col = "red")
 
@@ -216,6 +192,30 @@ thresh_20p <- quantile(
 binary_map <- prediction >= thresh_20p
 plot(binary_map,
      col = c("white", "darkgreen"),
-     legend = FALSE, main= "Binary Podostemaceae ENM (FC= L, RM= 2, AUC= 0.862, OR10P= 0.162")
+     legend = FALSE, main= "Binary Podostemaceae ENM (FC= LQ, RM= 4, AUC= 0.866, OR10P= 0.162)")
 
 points(occs, pch = 20, cex = 0.1, col = "red")
+
+#Examine variable response curves for selected model
+par(mfrow = c(5,5))
+
+for (v in names(dat)) {
+  
+  x <- seq(min(dat[[v]], na.rm=TRUE),
+           max(dat[[v]], na.rm=TRUE),
+           length.out=100)
+  
+  newdata <- data.frame(matrix(
+    apply(dat, 2, mean, na.rm=TRUE),
+    nrow=100,
+    ncol=ncol(dat),
+    byrow=TRUE
+  ))
+  
+  colnames(newdata) <- colnames(dat)
+  newdata[[v]] <- x
+  
+  y <- predict(maxnet_model, newdata, type="cloglog")
+  
+  plot(x, y, type="l", main=v, ylab="suitability")
+}
