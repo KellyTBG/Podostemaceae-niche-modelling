@@ -81,7 +81,7 @@ For this project, FABDEM V1-2 tiles covering the Neotropical region were downloa
 
 script used: *fabdem.sh*
 
-## 4. Extract FABDEM ZIP files
+### 3.1 Extract FABDEM ZIP files
 
 ```cd ~/scratch/Podostemaceae/niche/fabdem```
 
@@ -93,6 +93,8 @@ script used: *fabdem.sh*
 
 ```find . -name "*.tif" > tif_list.txt```
 
+### 3.4 Create a virtual mosaic file (.vrt)
+
 ```gdalbuildvrt Neotropics_FABDEM_america.vrt -input_file_list tif_list_america.txt``` #This command creates a virtual mosaic (.vrt) that combines all the TIFF files listed in tif_list_america.txt without generating a new heavy raster file yet.
 
 - output: Neotropics_FABDEM.vrt
@@ -101,7 +103,7 @@ script used: *fabdem.sh*
 
 ```gdalinfo Neotropics_FABDEM.vrt | grep -A6 "Corner Coordinates"```#help to verify integrity
 
-## 5. Generation of Neotropical tiles
+## 4. Generation of Neotropical tiles
 ## LSDTopoTools tile processing
 
 To enable scalable continental analyses, the Neotropical region was subdivided into regular 5° × 5° tiles stored in a tab-delimited table *tiles_neotropics.tsv* generated with the script *tiles_coordinates.sh*.
@@ -125,7 +127,7 @@ Script: *lsd_neotropics_topo.sh*
 Script: *lsd_neotropics_hydro.sh*
 
 
-## 6. Generation of continental topographic and hydrological mosaics
+## 5. Generation of continental topographic and hydrological mosaics
 
 All raster variables generated independently for each 5° × 5° tile were reprojected to a common geographic coordinate system (WGS84; EPSG:4326) and merged into continental mosaics using GDAL (gdalwarp). Final rasters were generated at ~30 m spatial resolution (1 arc-second) and exported as compressed Cloud Optimized GeoTIFFs (COGs). The resulting mosaics included topographic variables (slope, aspect, hillshade, and curvature metrics) and hydrological flow accumulation variables (d8_area, dinf_area, MD_area, FMD_area, and QMD_area).
 
@@ -133,13 +135,15 @@ Note: ~30 m spatial resolution was used because the aim was to model the data al
 
 Script: *mosaic_lsdtopo_1km.sh*
 
-## 7. Soil variables
+## 6. Soil variables extraction
 
 Soil variables were obtained from the ISRIC SoilGrids global database at 0–5 cm depth (https://soilgrids.org/). Selected variables included bulk density (bdod), cation exchange capacity (cec), coarse fragments (cfvo), clay content (clay), nitrogen, pH in water (phh2o), silt content (silt), and soil organic carbon (soc). These variables were selected after exploratory analyses, including Pearson correlation and PCA, to retain ecologically informative and minimally redundant predictors. *(Notebook: 03_soil.ipy)*.
 
 To enable scalable downloads across the Neotropics, the study area was subdivided into regular 5° × 5° geographic tiles in WGS84 geographic coordinates (EPSG:4326). Download tasks were automatically generated using the script `soilgrids_tables.sh`, which created a table containing all variable–tile combinations required for the analyses.
 
 Raster downloads were then performed using SLURM array jobs through the script `soilgrids_download_5X5.sh`. Each array task downloaded a single SoilGrids variable for a single geographic tile using the SoilGrids Web Coverage Service (WCS), allowing efficient and reproducible large-scale retrieval of environmental rasters across the Neotropics. 
+
+## 7. Generation of continental soil variable mosaics
 
 Finally, use *mosaic_soildgrids_1km.sh* to creat the mosaic for variable.
 
