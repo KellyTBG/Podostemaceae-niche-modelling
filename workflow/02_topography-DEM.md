@@ -116,13 +116,13 @@ Processing was parallelized using SLURM array jobs:
 
 ```sbatch --array=1-$(wc -l < tiles_neotropics.tsv)%10 lsd_neotropics_topo.sh```
 
-Script: *lsd_neotropics_topo.sh* # It was separate for type of variable
+Script: *lsd_neotropics_topo.sh* 
 
 ```N=$(wc -l < tiles_neotropics.tsv)``` 
 
 ```sbatch --array=1-${N}%10 lsd_neotropics_hydro.sh```
 
-Script: *lsd_neotropics_hydro.sh* # It was separate for type of variable
+Script: *lsd_neotropics_hydro.sh*
 
 
 ## 6. Generation of continental topographic and hydrological mosaics
@@ -131,7 +131,7 @@ All raster variables generated independently for each 5° × 5° tile were repro
 
 Note: ~30 m spatial resolution was used because the aim was to model the data alongside other raster layers that do not have a finer resolution.
 
-Script: *mosaic_lsdtopo.sh*
+Script: *mosaic_lsdtopo_1km.sh*
 
 ## 7. Soil variables
 
@@ -139,7 +139,9 @@ Soil variables were obtained from the ISRIC SoilGrids global database at 0–5 c
 
 To enable scalable downloads across the Neotropics, the study area was subdivided into regular 5° × 5° geographic tiles in WGS84 geographic coordinates (EPSG:4326). Download tasks were automatically generated using the script `soilgrids_tables.sh`, which created a table containing all variable–tile combinations required for the analyses.
 
-Raster downloads were then performed using SLURM array jobs through the script `soilgrids_download.sh`. Each array task downloaded a single SoilGrids variable for a single geographic tile using the SoilGrids Web Coverage Service (WCS), allowing efficient and reproducible large-scale retrieval of environmental rasters across the Neotropics.
+Raster downloads were then performed using SLURM array jobs through the script `soilgrids_download_5X5.sh`. Each array task downloaded a single SoilGrids variable for a single geographic tile using the SoilGrids Web Coverage Service (WCS), allowing efficient and reproducible large-scale retrieval of environmental rasters across the Neotropics. 
+
+Finally, use *mosaic_soildgrids_1km.sh* to creat the mosaic for variable.
 
 
 ## 8. CONTINUE WITH Notebook: 03_soil.ipy
