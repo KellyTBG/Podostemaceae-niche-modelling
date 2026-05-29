@@ -1,3 +1,6 @@
+#Podostemaceae ENM Evaluation, Selection, and Plotting
+#Luke Sparreo/Bedoya Lab, May 29, 2026
+
 #Connect to Drive to import selected occurrences, variables, and raster data
 library(googledrive)
 drive_auth(scopes = "https://www.googleapis.com/auth/drive")
@@ -23,24 +26,24 @@ climate_files <- drive_ls(as_id("1bSqUuhW4aRJ8ENqOttXHPRZRIW3Q1yYi"), pattern = 
 fabdem_files  <- drive_ls(as_id("1nubDTxE7iExFszHD3HbxrDwCm7NyEU6B"), pattern = ".tif")
 soil_files    <- drive_ls(as_id("1eTZCy-5kL7EgWRuF_ouQlml1teW6mEsL"), pattern = ".tif")
 
-# Keep only .tif files (exclude .aux.xml)
+#Keep only .tif files (exclude .aux.xml created in previous steps)
 climate_files <- climate_files[grepl("\\.tif$", climate_files$name), ]
 fabdem_files  <- fabdem_files[grepl("\\.tif$", fabdem_files$name), ]
 soil_files    <- soil_files[grepl("\\.tif$", soil_files$name), ]
 
-# Create local folders
+#Create local folders
 dir.create("rasters/climate",   recursive = TRUE, showWarnings = FALSE)
 dir.create("rasters/fabdem",    recursive = TRUE, showWarnings = FALSE)
 dir.create("rasters/soilgrids", recursive = TRUE, showWarnings = FALSE)
 
-# Function to download a tif file
+#Function to download tif files
 download_raster <- function(file_row, subfolder) {
   local_path <- file.path("rasters", subfolder, file_row$name)
   drive_download(as_id(file_row$id), path = local_path, overwrite = TRUE)
   local_path
 }
 
-# Download all tifs
+#Download all tifs
 climate_paths <- sapply(1:nrow(climate_files), function(i) 
   download_raster(climate_files[i, ], "climate"))
 fabdem_paths  <- sapply(1:nrow(fabdem_files),  function(i) 
@@ -48,21 +51,17 @@ fabdem_paths  <- sapply(1:nrow(fabdem_files),  function(i)
 soil_paths    <- sapply(1:nrow(soil_files),    function(i) 
   download_raster(soil_files[i, ],    "soilgrids"))
 
-# Stack each group
+#Stack each group
 climate_stack <- rast(climate_paths)
 fabdem_stack  <- rast(fabdem_paths)
 soil_stack    <- rast(soil_paths)
 
-print(climate_stack)
-print(fabdem_stack)
-print(soil_stack)
-
-# Raster extents very slightly different due to rounding difference, crop to smallest
+#Raster extents very slightly different due to rounding difference, crop to smallest
 ref_ext <- ext(climate_stack)
 fabdem_stack <- crop(fabdem_stack, ref_ext)
 soil_stack   <- crop(soil_stack,   ref_ext)
 
-# Stack all layers together
+#Stack all layers together
 library(ENMeval)
 env_stack <- c(climate_stack, fabdem_stack, soil_stack)
 
@@ -70,7 +69,7 @@ print(env_stack)
 colnames(soil_df)
 
 #Run models for testing
-#Extract occurrence coordinates and selected variables
+#Extract occurrence coordinates and selected variables (done in previous steps)
 occs <- soil_df[, c("Longitude", "Latitude")]
 
 selected_vars <- c(
@@ -85,12 +84,12 @@ selected_vars <- c(
   "Neotropics_silt_1km", "Neotropics_soc_1km"
 )
 
-# Subset stack to selected variables
+#Subset stack to selected variables
 env_stack_selected <- env_stack[[selected_vars]]
 
 print(env_stack_selected)
 
-#Run ENMeval with block cross-validation and a range of regularization multipliers
+#Run ENMeval with block cross-validation, using a range of feature classes and regularization multipliers
 terraOptions(memfrac = 0.9)  #Allow terra to use more available RAM
 enmeval_results <- ENMevaluate(
   occs = occs,
@@ -103,7 +102,7 @@ enmeval_results <- ENMevaluate(
   )
 )
 
-# Check results
+#Check results
 eval.results(enmeval_results)
 
 eval_tbl <- eval.results(enmeval_results)
