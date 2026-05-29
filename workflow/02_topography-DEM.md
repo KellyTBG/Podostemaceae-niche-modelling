@@ -95,7 +95,7 @@ script used: *fabdem.sh*
 
 ### 3.4 Create a virtual mosaic file (.vrt)
 
-```gdalbuildvrt Neotropics_FABDEM_america.vrt -input_file_list tif_list_america.txt``` #This command creates a virtual mosaic (.vrt) that combines all the TIFF files listed in tif_list_america.txt without generating a new heavy raster file yet.
+```gdalbuildvrt Neotropics_FABDEM_america.vrt -input_file_list tif_list.txt``` #This command creates a virtual mosaic (.vrt) that combines all the TIFF files listed in tif_list.txt without generating a new heavy raster file yet.
 
 - output: Neotropics_FABDEM.vrt
 
