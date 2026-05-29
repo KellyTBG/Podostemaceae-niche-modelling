@@ -1,9 +1,9 @@
-# **Environmental Variable Acquisition: Topography & hidrology**
+# **Environmental Variable Acquisition: Topography & Hidrology**
 # DEM Processing Workflow for Neotropical Analyses
 
 Developed by Kelly T. Bocanegra-González at the Bedoya Lab (NYBG), May 2026.
 
-## LSDTopoTools and lsdtopytools
+## LSDTopoTools and Lsdtopytools
 
 To perform large-scale topographic analyses across the Neotropics, we installed and configured both `LSDTopoTools2` and `lsdtopytools`.
 
@@ -49,7 +49,7 @@ The LSDTopoTools executable directory was added to the system `PATH` to allow co
 
 This confirmed that LSDTopoTools was compiled correctly and that the executable can becalled from the terminal.
 
-## 2. Install lsdtopytools
+## 2. Install Lsdtopytools
 
 A Python interface for LSDTopoTools (`lsdtopytools`) was also installed to facilitate terrain analysis workflows directly from Python environments.
 
