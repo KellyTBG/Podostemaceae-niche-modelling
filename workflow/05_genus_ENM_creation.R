@@ -107,9 +107,12 @@ make_hull <- function(pts) {
 }
 
 #Begin running models
+#May need to use code below between models to clear RAM
+#rm(list = setdiff(ls(), c("soil_df", "env_stack_selected", "make_hull")))
+#gc()
 library(ENMeval)
 
-#1: Marathrum
+#1: Marathrum, 727 occurrences
 #Filter dataset
 occs_marathrum <- soil_df %>%
   filter(Genus == "Marathrum") %>%
@@ -140,6 +143,8 @@ enmeval_marathrum <- ENMevaluate(
 eval_marathrum <- eval.results(enmeval_marathrum)
 eval_marathrum
 best_marathrum <- eval_marathrum[which.min(eval_marathrum$AICc), ]
+marathrum_stats <- as.data.frame(eval_marathrum)
+write.csv(marathrum_stats, "marathrum_enmeval_results.csv", row.names = FALSE)
 
 #Plot best Marathrum model
 eval_pred <- eval.predictions(enmeval_marathrum)
@@ -152,8 +157,7 @@ pred_marathrum <- eval_pred[[best_row]]
 par(mfrow = c(1,2))
 plot(pred_marathrum,
      main = paste("Marathrum Continuous | FC=", eval_marathrum$fc[best_row],
-                  "RM=", eval_marathrum$rm[best_row],
-                  "AUC=", round(eval_marathrum$auc.val.avg[best_row], 3)))
+                  "RM=", eval_marathrum$rm[best_row]))
 
 points(occs_marathrum, pch = 20, cex = 0.3, col = "red")
 
@@ -169,4 +173,437 @@ plot(binary_marathrum,
 
 points(occs_marathrum, pch = 20, cex = 0.3, col = "red")
 
-#CONTINUE HERE WITH OTHER GENERA
+#2. Podostemum, 475 occurrences
+occs_podostemum <- soil_df %>%
+  filter(Genus == "Podostemum") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_podostemum <- make_hull(occs_podostemum)
+env_podostemum <- crop(env_stack_selected, hull_podostemum)
+env_podostemum <- mask(env_podostemum, hull_podostemum)
+
+enmeval_podostemum <- ENMevaluate(
+  occs = occs_podostemum,
+  envs = env_podostemum,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_podostemum <- eval.results(enmeval_podostemum)
+print(eval_podostemum)
+podostemum_stats <- as.data.frame(eval_podostemum)
+write.csv(podostemum_stats, "podostemum_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_podostemum$AICc)
+eval_pred <- eval.predictions(enmeval_podostemum)
+
+pred_podostemum <- eval_pred[[best_row]]
+
+threshold_10p <- eval_podostemum$or.10p.avg[best_row]
+binary_podostemum <- terra::ifel(pred_podostemum >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_podostemum,
+     main = paste0("Podostemum Continuous | FC=", eval_podostemum$fc[best_row],
+                   " RM=", eval_podostemum$rm[best_row]))
+points(occs_podostemum, pch=20, cex=0.3, col="red")
+
+plot(binary_podostemum,
+     main = "Podostemum Binary (10%)")
+points(occs_podostemum, pch=20, cex=0.3, col="red")
+
+#3. Apinagia, 401 occurrences
+occs_apinagia <- soil_df %>%
+  filter(Genus == "Apinagia") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_apinagia <- make_hull(occs_apinagia)
+env_apinagia <- crop(env_stack_selected, hull_apinagia)
+env_apinagia <- mask(env_apinagia, hull_apinagia)
+
+enmeval_apinagia <- ENMevaluate(
+  occs = occs_apinagia,
+  envs = env_apinagia,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_apinagia <- eval.results(enmeval_apinagia)
+print(eval_apinagia)
+apinagia_stats <- as.data.frame(eval_apinagia)
+write.csv(apinagia_stats, "apinagia_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_apinagia$AICc)
+eval_pred <- eval.predictions(enmeval_apinagia)
+
+pred_apinagia <- eval_pred[[best_row]]
+
+threshold_10p <- eval_apinagia$or.10p.avg[best_row]
+binary_apinagia <- terra::ifel(pred_apinagia >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_apinagia,
+     main = paste0("Apinagia Continuous | FC=", eval_apinagia$fc[best_row],
+                   " RM=", eval_apinagia$rm[best_row]))
+points(occs_apinagia, pch=20, cex=0.3, col="red")
+
+plot(binary_apinagia,
+     main = "Apinagia Binary (10%)")
+points(occs_apinagia, pch=20, cex=0.3, col="red")
+
+#4. Tristicha, 381 occurrences
+occs_tristicha <- soil_df %>%
+  filter(Genus == "Tristicha") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_tristicha <- make_hull(occs_tristicha)
+env_tristicha <- crop(env_stack_selected, hull_tristicha)
+env_tristicha <- mask(env_tristicha, hull_tristicha)
+
+enmeval_tristicha <- ENMevaluate(
+  occs = occs_tristicha,
+  envs = env_tristicha,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_tristicha <- eval.results(enmeval_tristicha)
+print(eval_tristicha)
+tristicha_stats <- as.data.frame(eval_tristicha)
+write.csv(tristicha_stats, "tristicha_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_tristicha$AICc)
+eval_pred <- eval.predictions(enmeval_tristicha)
+
+pred_tristicha <- eval_pred[[best_row]]
+
+threshold_10p <- eval_tristicha$or.10p.avg[best_row]
+binary_tristicha <- terra::ifel(pred_tristicha >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_tristicha,
+     main = paste0("Tristicha Continuous | FC=", eval_tristicha$fc[best_row],
+                   " RM=", eval_tristicha$rm[best_row]))
+points(occs_tristicha, pch=20, cex=0.3, col="red")
+
+plot(binary_tristicha,
+     main = "Tristicha Binary (10%)")
+points(occs_tristicha, pch=20, cex=0.3, col="red")
+
+#5. Mourera, 295 occurrences
+occs_mourera <- soil_df %>%
+  filter(Genus == "Mourera") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_mourera <- make_hull(occs_mourera)
+env_mourera <- crop(env_stack_selected, hull_mourera)
+env_mourera <- mask(env_mourera, hull_mourera)
+
+enmeval_mourera <- ENMevaluate(
+  occs = occs_mourera,
+  envs = env_mourera,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_mourera <- eval.results(enmeval_mourera)
+print(eval_mourera)
+mourera_stats <- as.data.frame(eval_mourera)
+write.csv(mourera_stats, "mourera_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_mourera$AICc)
+eval_pred <- eval.predictions(enmeval_mourera)
+
+pred_mourera <- eval_pred[[best_row]]
+
+threshold_10p <- eval_mourera$or.10p.avg[best_row]
+binary_mourera <- terra::ifel(pred_mourera >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_mourera,
+     main = paste0("Mourera Continuous | FC=", eval_mourera$fc[best_row],
+                   " RM=", eval_mourera$rm[best_row]))
+points(occs_mourera, pch=20, cex=0.3, col="red")
+
+plot(binary_mourera,
+     main = "Mourera Binary (10%)")
+points(occs_mourera, pch=20, cex=0.3, col="red")
+
+#6. Rhyncholacis, 165 occurrences
+occs_rhyncholacis <- soil_df %>%
+  filter(Genus == "Rhyncholacis") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_rhyncholacis <- make_hull(occs_rhyncholacis)
+env_rhyncholacis <- crop(env_stack_selected, hull_rhyncholacis)
+env_rhyncholacis <- mask(env_rhyncholacis, hull_rhyncholacis)
+
+enmeval_rhyncholacis <- ENMevaluate(
+  occs = occs_rhyncholacis,
+  envs = env_rhyncholacis,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_rhyncholacis <- eval.results(enmeval_rhyncholacis)
+print(eval_rhyncholacis)
+rhyncholacis_stats <- as.data.frame(eval_rhyncholacis)
+write.csv(rhyncholacis_stats, "rhyncholacis_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_rhyncholacis$AICc)
+eval_pred <- eval.predictions(enmeval_rhyncholacis)
+
+pred_rhyncholacis <- eval_pred[[best_row]]
+
+threshold_10p <- eval_rhyncholacis$or.10p.avg[best_row]
+binary_rhyncholacis <- terra::ifel(pred_rhyncholacis >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_rhyncholacis,
+     main = paste0("Rhyncholacis Continuous | FC=", eval_rhyncholacis$fc[best_row],
+                   " RM=", eval_rhyncholacis$rm[best_row]))
+points(occs_rhyncholacis, pch=20, cex=0.3, col="red")
+
+plot(binary_rhyncholacis,
+     main = "Rhyncholacis Binary (10%)")
+points(occs_rhyncholacis, pch=20, cex=0.3, col="red")
+
+
+#7. Castelnavia, 124 occurrences
+occs_castelnavia <- soil_df %>%
+  filter(Genus == "Castelnavia") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_castelnavia <- make_hull(occs_castelnavia)
+env_castelnavia <- crop(env_stack_selected, hull_castelnavia)
+env_castelnavia <- mask(env_castelnavia, hull_castelnavia)
+
+enmeval_castelnavia <- ENMevaluate(
+  occs = occs_castelnavia,
+  envs = env_castelnavia,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_castelnavia <- eval.results(enmeval_castelnavia)
+print(eval_castelnavia)
+castelnavia_stats <- as.data.frame(eval_castelnavia)
+write.csv(castelnavia_stats, "castelnavia_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_castelnavia$AICc)
+eval_pred <- eval.predictions(enmeval_castelnavia)
+
+pred_castelnavia <- eval_pred[[best_row]]
+
+threshold_10p <- eval_castelnavia$or.10p.avg[best_row]
+binary_castelnavia <- terra::ifel(pred_castelnavia >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_castelnavia,
+     main = paste0("Castelnavia Continuous | FC=", eval_castelnavia$fc[best_row],
+                   " RM=", eval_castelnavia$rm[best_row]))
+points(occs_castelnavia, pch=20, cex=0.3, col="red")
+
+plot(binary_castelnavia,
+     main = "Castelnavia Binary (10%)")
+points(occs_castelnavia, pch=20, cex=0.3, col="red")
+
+
+#8. Noveloa, 73 occurrences
+occs_noveloa <- soil_df %>%
+  filter(Genus == "Noveloa") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_noveloa <- make_hull(occs_noveloa)
+env_noveloa <- crop(env_stack_selected, hull_noveloa)
+env_noveloa <- mask(env_noveloa, hull_noveloa)
+
+enmeval_noveloa <- ENMevaluate(
+  occs = occs_noveloa,
+  envs = env_noveloa,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_noveloa <- eval.results(enmeval_noveloa)
+print(eval_noveloa)
+noveloa_stats <- as.data.frame(eval_noveloa)
+write.csv(noveloa_stats, "noveloa_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_noveloa$AICc)
+eval_pred <- eval.predictions(enmeval_noveloa)
+
+pred_noveloa <- eval_pred[[best_row]]
+
+threshold_10p <- eval_noveloa$or.10p.avg[best_row]
+binary_noveloa <- terra::ifel(pred_noveloa >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_noveloa,
+     main = paste0("Noveloa Continuous | FC=", eval_noveloa$fc[best_row],
+                   " RM=", eval_noveloa$rm[best_row]))
+points(occs_noveloa, pch=20, cex=0.3, col="red")
+
+plot(binary_noveloa,
+     main = "Noveloa Binary (10%)")
+points(occs_noveloa, pch=20, cex=0.3, col="red")
+
+
+#9. Lophogyne, 71 occurrences
+occs_lophogyne <- soil_df %>%
+  filter(Genus == "Lophogyne") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_lophogyne <- make_hull(occs_lophogyne)
+env_lophogyne <- crop(env_stack_selected, hull_lophogyne)
+env_lophogyne <- mask(env_lophogyne, hull_lophogyne)
+
+enmeval_lophogyne <- ENMevaluate(
+  occs = occs_lophogyne,
+  envs = env_lophogyne,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_lophogyne <- eval.results(enmeval_lophogyne)
+print(eval_lophogyne)
+lophogyne_stats <- as.data.frame(eval_lophogyne)
+write.csv(lophogyne_stats, "lophogyne_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_lophogyne$AICc)
+eval_pred <- eval.predictions(enmeval_lophogyne)
+
+pred_lophogyne <- eval_pred[[best_row]]
+
+threshold_10p <- eval_lophogyne$or.10p.avg[best_row]
+binary_lophogyne <- terra::ifel(pred_lophogyne >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_lophogyne,
+     main = paste0("Lophogyne Continuous | FC=", eval_lophogyne$fc[best_row],
+                   " RM=", eval_lophogyne$rm[best_row]))
+points(occs_lophogyne, pch=20, cex=0.3, col="red")
+
+plot(binary_lophogyne,
+     main = "Lophogyne Binary (10%)")
+points(occs_lophogyne, pch=20, cex=0.3, col="red")
+
+
+#10. Weddellina, 68 occurrences
+occs_weddellina <- soil_df %>%
+  filter(Genus == "Weddellina") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_weddellina <- make_hull(occs_weddellina)
+env_weddellina <- crop(env_stack_selected, hull_weddellina)
+env_weddellina <- mask(env_weddellina, hull_weddellina)
+
+enmeval_weddellina <- ENMevaluate(
+  occs = occs_weddellina,
+  envs = env_weddellina,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_weddellina <- eval.results(enmeval_weddellina)
+print(eval_weddellina)
+weddellina_stats <- as.data.frame(eval_weddellina)
+write.csv(weddellina_stats, "weddellina_enmeval_results.csv", row.names = FALSE)
+
+best_row <- which.min(eval_weddellina$AICc)
+eval_pred <- eval.predictions(enmeval_weddellina)
+
+pred_weddellina <- eval_pred[[best_row]]
+
+threshold_10p <- eval_weddellina$or.10p.avg[best_row]
+binary_weddellina <- terra::ifel(pred_weddellina >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_weddellina,
+     main = paste0("Weddellina Continuous | FC=", eval_weddellina$fc[best_row],
+                   " RM=", eval_weddellina$rm[best_row]))
+points(occs_weddellina, pch=20, cex=0.3, col="red")
+
+plot(binary_weddellina,
+     main = "Weddellina Binary (10%)")
+points(occs_weddellina, pch=20, cex=0.3, col="red")
+
+
+#11. Oserya, 61 occurrences
+occs_oserya <- soil_df %>%
+  filter(Genus == "Oserya") %>%
+  select(Longitude, Latitude) %>%
+  filter(complete.cases(.))
+
+hull_oserya <- make_hull(occs_oserya)
+env_oserya <- crop(env_stack_selected, hull_oserya)
+env_oserya <- mask(env_oserya, hull_oserya)
+
+enmeval_oserya <- ENMevaluate(
+  occs = occs_oserya,
+  envs = env_oserya,
+  algorithm = "maxnet",
+  partitions = "block",
+  tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
+  doClamp = TRUE,
+  parallel = FALSE
+)
+
+eval_oserya <- eval.results(enmeval_oserya)
+print(eval_oserya)
+
+best_row <- which.min(eval_oserya$AICc)
+eval_pred <- eval.predictions(enmeval_oserya)
+oserya_stats <- as.data.frame(eval_oserya)
+write.csv(oserya_stats, "oserya_enmeval_results.csv", row.names = FALSE)
+
+pred_oserya <- eval_pred[[best_row]]
+
+threshold_10p <- eval_oserya$or.10p.avg[best_row]
+binary_oserya <- terra::ifel(pred_oserya >= threshold_10p, 1, 0)
+
+par(mfrow=c(1,2))
+plot(pred_oserya,
+     main = paste0("Oserya Continuous | FC=", eval_oserya$fc[best_row],
+                   " RM=", eval_oserya$rm[best_row]))
+points(occs_oserya, pch=20, cex=0.3, col="red")
+
+plot(binary_oserya,
+     main = "Oserya Binary (10%)")
+points(occs_oserya, pch=20, cex=0.3, col="red")
