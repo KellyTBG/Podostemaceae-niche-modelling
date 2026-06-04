@@ -107,9 +107,6 @@ make_hull <- function(pts) {
 }
 
 #Begin running models
-#May need to use code below between models to clear RAM
-#rm(list = setdiff(ls(), c("soil_df", "env_stack_selected", "make_hull")))
-#gc()
 library(ENMeval)
 
 #1: Marathrum, 727 occurrences
@@ -182,6 +179,8 @@ occs_podostemum <- soil_df %>%
 hull_podostemum <- make_hull(occs_podostemum)
 env_podostemum <- crop(env_stack_selected, hull_podostemum)
 env_podostemum <- mask(env_podostemum, hull_podostemum)
+#Largest extent, need to aggregate for RAM
+env_podostemum <- aggregate(env_podostemum, fact = 2, fun = "mean")
 
 enmeval_podostemum <- ENMevaluate(
   occs = occs_podostemum,
@@ -268,6 +267,8 @@ occs_tristicha <- soil_df %>%
 hull_tristicha <- make_hull(occs_tristicha)
 env_tristicha <- crop(env_stack_selected, hull_tristicha)
 env_tristicha <- mask(env_tristicha, hull_tristicha)
+#Second largest extent, need to aggregate for RAM
+env_tristicha <- aggregate(env_tristicha, fact = 2, fun = "mean")
 
 enmeval_tristicha <- ENMevaluate(
   occs = occs_tristicha,
@@ -276,7 +277,7 @@ enmeval_tristicha <- ENMevaluate(
   partitions = "block",
   tune.args = list(fc = c("L","LQ","LQH","LQHP"), rm = c(1,2,4)),
   doClamp = TRUE,
-  parallel = FALSE
+  parallel = FALSE,
 )
 
 eval_tristicha <- eval.results(enmeval_tristicha)
