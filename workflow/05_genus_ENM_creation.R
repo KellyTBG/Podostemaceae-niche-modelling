@@ -608,3 +608,195 @@ points(occs_oserya, pch=20, cex=0.3, col="red")
 plot(binary_oserya,
      main = "Oserya Binary (10%)")
 points(occs_oserya, pch=20, cex=0.3, col="red")
+
+#Save best-model rasters to working directory
+genera <- list(
+  list(name = "Marathrum",    pred = pred_marathrum,    bin = binary_marathrum),
+  list(name = "Podostemum",   pred = pred_podostemum,   bin = binary_podostemum),
+  list(name = "Apinagia",     pred = pred_apinagia,     bin = binary_apinagia),
+  list(name = "Tristicha",    pred = pred_tristicha,    bin = binary_tristicha),
+  list(name = "Mourera",      pred = pred_mourera,      bin = binary_mourera),
+  list(name = "Rhyncholacis", pred = pred_rhyncholacis, bin = binary_rhyncholacis),
+  list(name = "Castelnavia",  pred = pred_castelnavia,  bin = binary_castelnavia),
+  list(name = "Noveloa",      pred = pred_noveloa,      bin = binary_noveloa),
+  list(name = "Lophogyne",    pred = pred_lophogyne,    bin = binary_lophogyne),
+  list(name = "Weddellina",   pred = pred_weddellina,   bin = binary_weddellina),
+  list(name = "Oserya",       pred = pred_oserya,       bin = binary_oserya)
+)
+
+for (g in genera) {
+  writeRaster(
+    g$pred,
+    filename  = paste0(g$name, "_continuous_best.tif"),
+    overwrite = TRUE,
+    datatype  = "FLT4S" 
+  )
+  writeRaster(
+    g$bin,
+    filename  = paste0(g$name, "_binary10p_best.tif"),
+    overwrite = TRUE,
+    datatype  = "INT1U" 
+  )
+  message("Saved: ", g$name)
+}
+
+#Plotting hull outlines on Neotropics map for comparability
+library(terra)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rnaturalearthhires)
+
+# Hull outlines on Neotropics map
+library(terra)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rnaturalearthhires)
+
+land <- ne_countries(scale = "medium", returnclass = "sf")
+land <- st_crop(land, st_bbox(c(xmin=-120, xmax=-30, ymin=-40, ymax=35), crs=st_crs(4326)))
+
+rivers <- ne_download(scale = 10, type = "rivers_lake_centerlines", 
+                      category = "physical", returnclass = "sf")
+rivers <- st_crop(rivers, st_bbox(c(xmin=-120, xmax=-30, ymin=-40, ymax=35), crs=st_crs(4326)))
+
+genera <- c("Marathrum","Podostemum","Apinagia","Tristicha","Mourera",
+            "Rhyncholacis","Castelnavia","Noveloa","Lophogyne","Weddellina","Oserya")
+
+#Hull outlines overlayed on Neotropical river map
+library(terra)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(rnaturalearthhires)
+
+land <- ne_countries(scale = "medium", returnclass = "sf")
+land <- st_crop(land, st_bbox(c(xmin=-120, xmax=-30, ymin=-40, ymax=35), crs=st_crs(4326)))
+
+rivers_primary <- ne_download(scale = 10, type = "rivers_lake_centerlines", 
+                              category = "physical", returnclass = "sf")
+
+rivers_secondary <- ne_download(scale = 10, type = "rivers_lake_centerlines_scale_rank", 
+                                category = "physical", returnclass = "sf")
+
+rivers_primary   <- st_crop(rivers_primary,   st_bbox(c(xmin=-120, xmax=-30, ymin=-40, ymax=35), crs=st_crs(4326)))
+rivers_secondary <- st_crop(rivers_secondary, st_bbox(c(xmin=-120, xmax=-30, ymin=-40, ymax=35), crs=st_crs(4326)))
+
+genera <- c("Marathrum","Podostemum","Apinagia","Tristicha","Mourera",
+            "Rhyncholacis","Castelnavia","Noveloa","Lophogyne","Weddellina","Oserya")
+
+genus_colors <- c(
+  "Marathrum"    = "#E41A1C",
+  "Podostemum"   = "#377EB8",
+  "Apinagia"     = "#4DAF4A",
+  "Tristicha"    = "#FF7F00",
+  "Mourera"      = "#984EA3",
+  "Rhyncholacis" = "#A65628",
+  "Castelnavia"  = "#F781BF",
+  "Noveloa"      = "#999999",
+  "Lophogyne"    = "#FFFF33",
+  "Weddellina"   = "#00CED1",
+  "Oserya"       = "#2E8B57"
+)
+
+hull_list <- list()
+for (g in genera) {
+  pts <- soil_df %>%
+    filter(Genus == g) %>%
+    select(Longitude, Latitude) %>%
+    filter(complete.cases(.))
+  hull_list[[g]] <- make_hull(pts)
+}
+
+hull_sf_list <- lapply(hull_list, function(h) st_as_sf(h))
+
+library(ggplot2)
+hull_combined <- do.call(rbind, lapply(genera, function(g) {
+  sf_obj <- hull_sf_list[[g]]
+  sf_obj$Genus <- g
+  sf_obj
+}))
+
+ggplot() +
+  geom_sf(data = land, fill = "#f0ede4", color = "#aaaaaa", linewidth = 0.3) +
+  geom_sf(data = rivers_secondary, color = "#7ab8d4", linewidth = 0.15) +
+  geom_sf(data = rivers_primary,   color = "#7ab8d4", linewidth = 0.4) +
+  geom_sf(data = hull_combined, 
+          aes(color = Genus, fill = Genus),
+          linewidth = 0.8, alpha = 0.08) +
+  scale_color_manual(values = genus_colors) +
+  scale_fill_manual(values = genus_colors) +
+  coord_sf(xlim = c(-120, -30), ylim = c(-40, 30), expand = FALSE) +
+  theme_bw() +
+  theme(
+    panel.background = element_rect(fill = "#d6e8f5"),
+    legend.position  = "right",
+    legend.title     = element_text(size = 9),
+    legend.text      = element_text(size = 8),
+    plot.title       = element_text(size = 11)
+  )
+
+#Genus-level statistical test: does best validation AUC correlate with occurrence count?
+library(dplyr)
+
+#Occurrence counts
+genus_n <- data.frame(
+  Genus = c("Marathrum","Podostemum","Apinagia","Tristicha","Mourera",
+            "Rhyncholacis","Castelnavia","Noveloa","Lophogyne","Weddellina","Oserya"),
+  n_occs = c(727, 475, 401, 381, 295, 165, 124, 73, 71, 68, 61)
+)
+
+#Load all CSVs and extract best model AUC (lowest AICc)
+stats_dir <- "/Users/lukesparreo/Desktop/PodostemaceaeENMs/ModelStats/"
+
+genera_files <- c(
+  "Marathrum"    = paste0(stats_dir, "marathrum_enmeval_results.csv"),
+  "Podostemum"   = paste0(stats_dir, "podostemum_enmeval_results.csv"),
+  "Apinagia"     = paste0(stats_dir, "apinagia_enmeval_results.csv"),
+  "Tristicha"    = paste0(stats_dir, "tristicha_enmeval_results.csv"),
+  "Mourera"      = paste0(stats_dir, "mourera_enmeval_results.csv"),
+  "Rhyncholacis" = paste0(stats_dir, "rhyncholacis_enmeval_results.csv"),
+  "Castelnavia"  = paste0(stats_dir, "castelnavia_enmeval_results.csv"),
+  "Noveloa"      = paste0(stats_dir, "noveloa_enmeval_results.csv"),
+  "Lophogyne"    = paste0(stats_dir, "lophogyne_enmeval_results.csv"),
+  "Weddellina"   = paste0(stats_dir, "weddellina_enmeval_results.csv"),
+  "Oserya"       = paste0(stats_dir, "oserya_enmeval_results.csv")
+)
+
+best_auc <- lapply(names(genera_files), function(g) {
+  df <- read.csv(genera_files[g])
+  best_row <- df[which.max(df$auc.val.avg), ]
+  data.frame(
+    Genus       = g,
+    best_auc    = best_row$auc.val.avg,
+    best_fc     = best_row$fc,
+    best_rm     = best_row$rm
+  )
+}) %>% bind_rows()
+
+#Merge with occurrence counts
+auc_df <- left_join(best_auc, genus_n, by = "Genus")
+print(auc_df)
+
+#Spearman correlation
+spearman_test <- cor.test(auc_df$n_occs, auc_df$best_auc, method = "spearman")
+print(spearman_test)
+
+#Plot
+library(ggplot2)
+library(ggrepel)
+
+ggplot(auc_df, aes(x = n_occs, y = best_auc, label = Genus)) +
+  geom_smooth(method = "lm", se = TRUE, color = "grey60", linetype = "dashed", linewidth = 0.7) +
+  geom_point(size = 3, color = "#2c7bb6") +
+  geom_text_repel(size = 3, max.overlaps = 20, fontface = "italic") +
+  annotate("text", 
+           x = max(auc_df$n_occs) * 0.7, 
+           y = min(auc_df$best_auc) + 0.01,
+           label = paste0("Spearman ρ = ", round(spearman_test$estimate, 3),
+                          "\np = ", round(spearman_test$p.value, 3)),
+           size = 3.5, hjust = 0) +
+  labs(x = "Number of Occurrences",
+       y = "Best Model Validation AUC",
+       title = "Effect of Occurrence Count on Model Performance")
