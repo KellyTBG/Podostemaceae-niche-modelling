@@ -1,5 +1,5 @@
 #Genus-Level Podostemaceae ENM Evaluation, Selection, and Plotting
-#Luke Sparreo/Bedoya Lab, June 2, 2026
+#Luke Sparreo/Bedoya Lab, June 2-30, 2026
 
 #Connect to Drive to import selected occurrences, variables, and raster data
 library(googledrive)
@@ -16,6 +16,20 @@ drive_download(
   overwrite = TRUE
 )
 soil_df <- read.csv("Podostemaceae_matrix.csv")
+
+#Curate dataset per taxonomic revisions and occurance errors
+soil_df$Species[soil_df$Species == "Marathrum capillaceum"] <- "Lophogyne capillacea"
+soil_df$Species[soil_df$Species == "Lonchostephus elegans"] <- "Mourera elegans"
+soil_df$Species[soil_df$Species == "Lophogyne aeruginosa"]  <- "Lophogyne penicillata"
+soil_df$Species[soil_df$Species == "Apinagia riedelii"]     <- "Apinagia fucoides"
+soil_df$Species[soil_df$Species == "Apinagia batrachifolia"] <- "	Apinagia batrachiifolia"
+soil_df$Species[soil_df$Species == "Apinagia yguazuensis"] <- "Apinagia fucoides"
+soil_df$Species[soil_df$Species == "Apinagia secundiflora"]  <- "Apinagia richardiana"
+soil_df$Species[soil_df$Species == "Apinagia corymbosa"]     <- "Apinagia richardiana"
+soil_df$Species[soil_df$Species == "Apinagia exilis"]  <- "Apinagia richardiana"
+soil_df$Species[soil_df$Species == "Podostemum flagelliforme"]     <- "Devillea flagelliformis"
+
+soil_df <- soil_df[!soil_df$GBIF_code %in% c(1260131418, 1260131425, 1844433356, 4061593219, 1322407602, 3068331619), ]
 View(soil_df)
 
 #Examine dataframe by genus
@@ -109,7 +123,7 @@ make_hull <- function(pts) {
 #Begin running models
 library(ENMeval)
 
-#1: Marathrum, 727 occurrences
+#1: Marathrum, 697 occurrences
 #Filter dataset
 occs_marathrum <- soil_df %>%
   filter(Genus == "Marathrum") %>%
@@ -170,7 +184,7 @@ plot(binary_marathrum,
 
 points(occs_marathrum, pch = 20, cex = 0.3, col = "red")
 
-#2. Podostemum, 475 occurrences
+#2. Podostemum, 473 occurrences
 occs_podostemum <- soil_df %>%
   filter(Genus == "Podostemum") %>%
   select(Longitude, Latitude) %>%
@@ -303,7 +317,7 @@ plot(binary_tristicha,
      main = "Tristicha Binary (10%)")
 points(occs_tristicha, pch=20, cex=0.3, col="red")
 
-#5. Mourera, 295 occurrences
+#5. Mourera, 306 occurrences
 occs_mourera <- soil_df %>%
   filter(Genus == "Mourera") %>%
   select(Longitude, Latitude) %>%
@@ -478,7 +492,7 @@ plot(binary_noveloa,
 points(occs_noveloa, pch=20, cex=0.3, col="red")
 
 
-#9. Lophogyne, 71 occurrences
+#9. Lophogyne, 98 occurrences
 occs_lophogyne <- soil_df %>%
   filter(Genus == "Lophogyne") %>%
   select(Longitude, Latitude) %>%
@@ -522,7 +536,7 @@ plot(binary_lophogyne,
 points(occs_lophogyne, pch=20, cex=0.3, col="red")
 
 
-#10. Weddellina, 68 occurrences
+#10. Weddellina, 67 occurrences
 occs_weddellina <- soil_df %>%
   filter(Genus == "Weddellina") %>%
   select(Longitude, Latitude) %>%
@@ -748,7 +762,7 @@ genus_n <- data.frame(
 )
 
 #Load all CSVs and extract best model AUC (lowest AICc)
-stats_dir <- "/Users/lukesparreo/Desktop/PodostemaceaeENMs/ModelStats/"
+stats_dir <- "/Users/lukesparreo/Desktop/PodostemaceaeENMs/Jun29_genus_and_species_ENMs//"
 
 genera_files <- c(
   "Marathrum"    = paste0(stats_dir, "marathrum_enmeval_results.csv"),
