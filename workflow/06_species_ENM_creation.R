@@ -1,5 +1,5 @@
 #Species-Level Podostemaceae ENM Evaluation, Selection, and Plotting
-#Luke Sparreo/Bedoya Lab, June 13, 2026
+#Luke Sparreo/Bedoya Lab, June 13-30, 2026
 
 #Connect to Drive to import selected occurrences, variables, and raster data
 library(googledrive)
@@ -16,6 +16,20 @@ drive_download(
   overwrite = TRUE
 )
 soil_df <- read.csv("Podostemaceae_matrix.csv")
+
+#Curate dataset per taxonomic revisions and occurance errors
+soil_df$Species[soil_df$Species == "Marathrum capillaceum"] <- "Lophogyne capillacea"
+soil_df$Species[soil_df$Species == "Lonchostephus elegans"] <- "Mourera elegans"
+soil_df$Species[soil_df$Species == "Lophogyne aeruginosa"]  <- "Lophogyne penicillata"
+soil_df$Species[soil_df$Species == "Apinagia riedelii"]     <- "Apinagia fucoides"
+soil_df$Species[soil_df$Species == "Apinagia batrachifolia"] <- "	Apinagia batrachiifolia"
+soil_df$Species[soil_df$Species == "Apinagia yguazuensis"] <- "Apinagia fucoides"
+soil_df$Species[soil_df$Species == "Apinagia secundiflora"]  <- "Apinagia richardiana"
+soil_df$Species[soil_df$Species == "Apinagia corymbosa"]     <- "Apinagia richardiana"
+soil_df$Species[soil_df$Species == "Apinagia exilis"]  <- "Apinagia richardiana"
+soil_df$Species[soil_df$Species == "Podostemum flagelliforme"]     <- "Devillea flagelliformis"
+
+soil_df <- soil_df[!soil_df$GBIF_code %in% c(1260131418, 1260131425, 1844433356, 4061593219, 1322407602, 3068331619), ]
 View(soil_df)
 
 #Examine dataframe by genus
@@ -24,11 +38,13 @@ library(stringr)
 soil_df <- soil_df %>%
   mutate(Genus = str_extract(Species, "^\\S+"))
 
-#Count by genus
 genus_counts <- soil_df %>%
   count(Genus, sort = TRUE)
-
 print(genus_counts)
+
+species_counts <- soil_df %>%
+  count(Species, sort = TRUE)
+print(species_counts)
 
 #Load raster data for selected variables
 library(terra)
@@ -184,7 +200,7 @@ for (sp in species_counts$Species) {
   
   write.csv(
     as.data.frame(eval_sp),
-    file.path("species_ENMs", paste0(sp_clean, "_enmeval_results.csv")),
+    file.path("Jun29_genus_and_species_ENMs", paste0(sp_clean, "_enmeval_results.csv")),
     row.names = FALSE
   )
   
@@ -215,7 +231,7 @@ for (sp in species_counts$Species) {
   binary_sp     <- terra::ifel(pred_sp >= threshold_10p, 1, 0)
   
   png(
-    file.path("species_ENMs", paste0(sp_clean, "_ENM_plots.png")),
+    file.path("Jun29_genus_and_species_ENMs", paste0(sp_clean, "_ENM_plots.png")),
     width = 1600, height = 700, res = 150
   )
   par(mfrow = c(1, 2))
@@ -230,10 +246,10 @@ for (sp in species_counts$Species) {
   dev.off()
   
   writeRaster(pred_sp,
-              file.path("species_ENMs", paste0(sp_clean, "_continuous_best.tif")),
+              file.path("Jun29_genus_and_species_ENMs", paste0(sp_clean, "_continuous_best.tif")),
               overwrite = TRUE, datatype = "FLT4S")
   writeRaster(binary_sp,
-              file.path("species_ENMs", paste0(sp_clean, "_binary10p_best.tif")),
+              file.path("Jun29_genus_and_species_ENMs", paste0(sp_clean, "_binary10p_best.tif")),
               overwrite = TRUE, datatype = "INT1U")
   
   message("  Saved: ", sp_clean)
@@ -242,14 +258,12 @@ for (sp in species_counts$Species) {
 # Combine and save contributions
 contrib_all <- do.call(rbind, contrib_list)
 rownames(contrib_all) <- NULL
-write.csv(contrib_all, "species_ENMs/variable_contributions.csv", row.names = FALSE)
+write.csv(contrib_all, "Jun29_genus_and_species_ENMs/variable_contributions.csv", row.names = FALSE)
 
 library(tidyr)
 contrib_wide <- contrib_all %>%
   pivot_wider(names_from = Variable, values_from = Contribution_pct, values_fill = 0)
-write.csv(contrib_wide, "species_ENMs/variable_contributions_wide.csv", row.names = FALSE)
-
-message("All done. Contribution tables saved.")
+write.csv(contrib_wide, "Jun29_genus_and_species_ENMs/variable_contributions_wide.csv", row.names = FALSE)
 
 #Species-level statistical test: does best validation AUC correlate with occurrence count?
 library(dplyr)
@@ -259,7 +273,7 @@ species_n <- soil_df %>%
   count(Species, name = "n_occs")
 
 #Load all species ENMeval CSVs and extract best model AUC
-stats_dir <- "species_ENMs/"
+stats_dir <- "Jun29_genus_and_species_ENMs/"
 
 species_files <- list.files(
   stats_dir,
