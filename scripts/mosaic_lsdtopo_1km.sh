@@ -1,12 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=lsdtopo_vars_1km
-#SBATCH --output=lsdtopo_vars_1km_%A_%a.out
-#SBATCH --error=lsdtopo_vars_1km_%A_%a.err
-#SBATCH --partition=himem
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=250G
-#SBATCH --mail-user=xx@xx
-#SBATCH --mail-type=END,FAIL
 
 set -euo pipefail
 

@@ -1,10 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=fabdem_tile_table
-#SBATCH --output=fabdem_tile_table_%j.out
-#SBATCH --error=fabdem_tile_table_%j.err
-#SBATCH --partition=short
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=4G
 
 # Create a table of 5-degree tiles covering the Neotropics.
 # The table includes tile name, bounding box coordinates, and UTM EPSG code.

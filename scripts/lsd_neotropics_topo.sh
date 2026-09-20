@@ -1,12 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=lsd_neotropics_topo
-#SBATCH --output=lsd_neotropics_topo_%A_%a.out
-#SBATCH --error=lsd_neotropics_topo_%A_%a.err
-#SBATCH --partition=himem
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=250G
-#SBATCH --mail-user=xx@xx
-#SBATCH --mail-type=END,FAIL
 
 set -euo pipefail
 

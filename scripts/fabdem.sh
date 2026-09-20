@@ -1,12 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=FABDEM
-#SBATCH --output=FABDEM_download_%j.out
-#SBATCH --error=FABDEM_download_%j.err
-#SBATCH --partition=himem
-#SBATCH --cpus-per-task=32
-#SBATCH --mem=250G
-#SBATCH --mail-user=xxx@.xx
-#SBATCH --mail-type=END,FAIL
 
 
 out_dir="/home/"

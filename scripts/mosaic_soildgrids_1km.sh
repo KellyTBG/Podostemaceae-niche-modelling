@@ -1,12 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=soilgrids_1km
-#SBATCH --output=soilgrids_1km_%A_%a.out
-#SBATCH --error=soilgrids_1km_%A_%a.err
-#SBATCH --partition=medium
-#SBATCH --cpus-per-task=16
-#SBATCH --mem=82G
-#SBATCH --mail-user=xx@xx
-#SBATCH --mail-type=END,FAIL
 
 set -euo pipefail
 

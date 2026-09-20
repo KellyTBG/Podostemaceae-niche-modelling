@@ -1,11 +1,5 @@
 #!/bin/bash
 #SBATCH --job-name=soilgrids
-#SBATCH --output=soilgrids_download_%j.out
-#SBATCH --error=soilgrids_download_%j.err
-#SBATCH --partition=short
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=8G
-
 
 set -euo pipefail
 
